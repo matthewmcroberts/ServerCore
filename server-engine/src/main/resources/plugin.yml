@@ -1,0 +1,4 @@
+name: ServerEngine
+version: 1.0.0
+main: com.matthewmcroberts.ServerEngine
+api-version: '26.2'
