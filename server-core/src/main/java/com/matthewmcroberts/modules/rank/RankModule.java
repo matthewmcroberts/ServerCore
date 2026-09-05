@@ -2,9 +2,12 @@ package com.matthewmcroberts.modules.rank;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matthewmcroberts.modules.ServerModule;
+import com.matthewmcroberts.modules.rank.client.RankApiClient;
 import com.matthewmcroberts.modules.rank.client.RankWebSocketClient;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.lang.ref.WeakReference;
 
 import static org.bukkit.Bukkit.getLogger;
 
@@ -12,7 +15,8 @@ import static org.bukkit.Bukkit.getLogger;
 public class RankModule implements ServerModule {
     private final JavaPlugin plugin;
 
-    private RankWebSocketClient client;
+    private RankWebSocketClient webSocketClient;
+    private RankApiClient apiClient;
 
     private ObjectMapper objectMapper;
 
@@ -20,9 +24,10 @@ public class RankModule implements ServerModule {
     public void setup() {
         objectMapper = new ObjectMapper();
 
-        client = new RankWebSocketClient(this.plugin, objectMapper);
+        webSocketClient = new RankWebSocketClient(this.plugin, objectMapper, new WeakReference<>(this));
+        apiClient = new RankApiClient(objectMapper);
 
-        client.connect(
+        webSocketClient.connect(
                 "ws://localhost:8080/ws"
         );
 
@@ -31,11 +36,29 @@ public class RankModule implements ServerModule {
 
     @Override
     public void teardown() {
-        if(client != null) {
-            client.disconnect();
+        if(webSocketClient != null) {
+            webSocketClient.disconnect();
         }
 
-        client = null;
+        apiClient = null;
+        webSocketClient = null;
         objectMapper = null;
     }
+
+    // createRank
+    // getRankById
+    // getAllRanks
+    // updateRankDisplayName
+    // updateRankPriority
+    // addRankPermissions
+    // removeRankPermissions
+    // addRankInheritance
+    // removeRankInheritance
+    // deleteRank
+    // getRankByName
+    // getPlayersWithRank
+    // assignPlayerRank
+    // getPlayerRankAssignments
+    // removePlayerRank
+    // getPlayerRanks
 }

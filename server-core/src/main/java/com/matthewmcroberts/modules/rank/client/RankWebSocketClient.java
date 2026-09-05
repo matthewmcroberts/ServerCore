@@ -1,9 +1,11 @@
 package com.matthewmcroberts.modules.rank.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.matthewmcroberts.modules.rank.RankModule;
 import com.matthewmcroberts.modules.rank.RawStringMessageConverter;
 import jakarta.websocket.WebSocketContainer;
 import lombok.Getter;
+import lombok.NonNull;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.glassfish.tyrus.client.ClientManager;
 import org.springframework.messaging.converter.StringMessageConverter;
@@ -11,6 +13,8 @@ import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
+import java.lang.ref.WeakReference;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 public class RankWebSocketClient {
@@ -22,7 +26,7 @@ public class RankWebSocketClient {
     @Getter
     private StompSession session;
 
-    public RankWebSocketClient(JavaPlugin plugin, ObjectMapper objectMapper) {
+    public RankWebSocketClient(JavaPlugin plugin, ObjectMapper objectMapper, WeakReference<RankModule> rankModuleReference) {
         this.plugin = plugin;
 
         WebSocketContainer webSocketContainer = ClientManager.createClient();
@@ -30,18 +34,11 @@ public class RankWebSocketClient {
         StandardWebSocketClient webSocketClient =
                 new StandardWebSocketClient(webSocketContainer);
 
-        this.stompClient =
-                new WebSocketStompClient(webSocketClient);
+        this.stompClient = new WebSocketStompClient(webSocketClient);
 
-        this.stompClient.setMessageConverter(
-                new RawStringMessageConverter()
-        );
+        this.stompClient.setMessageConverter(new RawStringMessageConverter());
 
-        this.eventHandler =
-                new WebSocketEventHandler(
-                        plugin,
-                        objectMapper
-                );
+        this.eventHandler = new WebSocketEventHandler(plugin, objectMapper, rankModuleReference);
     }
 
     public CompletableFuture<StompSession> connect(String url) {

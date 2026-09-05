@@ -1,6 +1,7 @@
 package com.matthewmcroberts.modules.rank.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.matthewmcroberts.modules.rank.RankModule;
 import com.matthewmcroberts.modules.rank.events.PlayerRankAssignEvent;
 import com.matthewmcroberts.modules.rank.events.PlayerRankRemoveEvent;
 import com.matthewmcroberts.modules.rank.events.RankCreateEvent;
@@ -8,25 +9,34 @@ import com.matthewmcroberts.modules.rank.events.RankDeleteEvent;
 import com.matthewmcroberts.modules.rank.events.RankInheritanceUpdateEvent;
 import com.matthewmcroberts.modules.rank.events.RankPermissionUpdateEvent;
 import com.matthewmcroberts.modules.rank.events.RankUpdateEvent;
+import lombok.NonNull;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Type;
+import java.util.Objects;
 
 import static org.bukkit.Bukkit.getLogger;
 
-public class WebSocketEventHandler
-        extends StompSessionHandlerAdapter {
+public class WebSocketEventHandler extends StompSessionHandlerAdapter {
 
     private final JavaPlugin plugin;
     private final ObjectMapper objectMapper;
 
-    public WebSocketEventHandler(JavaPlugin plugin, ObjectMapper objectMapper) {
+    private final WeakReference<RankModule> rankModuleReference;
+
+    private @NonNull RankModule getRankModule() {
+        return Objects.requireNonNull(this.rankModuleReference.get(), "RankModule is no longer available.");
+    }
+
+    public WebSocketEventHandler(JavaPlugin plugin, ObjectMapper objectMapper, WeakReference<RankModule> rankModuleReference) {
         this.plugin = plugin;
         this.objectMapper = objectMapper;
+        this.rankModuleReference = rankModuleReference;
     }
 
     @Override
