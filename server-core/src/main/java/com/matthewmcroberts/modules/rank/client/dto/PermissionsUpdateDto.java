@@ -1,4 +1,4 @@
-package com.matthewmcroberts.modules.rank.models;
+package com.matthewmcroberts.modules.rank.client.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +15,6 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PermissionsUpdate {
+public class PermissionsUpdateDto {
     private Set<String> permissions;
 }

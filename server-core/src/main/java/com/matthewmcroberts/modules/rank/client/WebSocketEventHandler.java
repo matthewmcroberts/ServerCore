@@ -2,13 +2,13 @@ package com.matthewmcroberts.modules.rank.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matthewmcroberts.modules.rank.RankModule;
-import com.matthewmcroberts.modules.rank.events.PlayerRankAssignEvent;
-import com.matthewmcroberts.modules.rank.events.PlayerRankRemoveEvent;
-import com.matthewmcroberts.modules.rank.events.RankCreateEvent;
-import com.matthewmcroberts.modules.rank.events.RankDeleteEvent;
-import com.matthewmcroberts.modules.rank.events.RankInheritanceUpdateEvent;
-import com.matthewmcroberts.modules.rank.events.RankPermissionUpdateEvent;
-import com.matthewmcroberts.modules.rank.events.RankUpdateEvent;
+import com.matthewmcroberts.modules.rank.client.events.PlayerRankAssignEvent;
+import com.matthewmcroberts.modules.rank.client.events.PlayerRankRemoveEvent;
+import com.matthewmcroberts.modules.rank.client.events.RankCreateEvent;
+import com.matthewmcroberts.modules.rank.client.events.RankDeleteEvent;
+import com.matthewmcroberts.modules.rank.client.events.RankInheritanceUpdateEvent;
+import com.matthewmcroberts.modules.rank.client.events.RankPermissionUpdateEvent;
+import com.matthewmcroberts.modules.rank.client.events.RankUpdateEvent;
 import lombok.NonNull;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -156,7 +156,7 @@ public class WebSocketEventHandler extends StompSessionHandlerAdapter {
     }
 
     protected void onRankCreate(RankCreateEvent event) {
-        getLogger().info(event.getRank().getId());
+        getLogger().info(event.getRankDto().getId());
     }
 
     protected void onRankDelete(RankDeleteEvent event) {

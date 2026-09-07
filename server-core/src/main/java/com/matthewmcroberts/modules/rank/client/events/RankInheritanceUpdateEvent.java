@@ -1,7 +1,7 @@
-package com.matthewmcroberts.modules.rank.events;
+package com.matthewmcroberts.modules.rank.client.events;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.matthewmcroberts.modules.rank.models.Rank;
+import com.matthewmcroberts.modules.rank.client.dto.RankDto;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -15,10 +15,10 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RankInheritanceUpdateEvent {
     @NonNull
-    Rank updatedRank;
+    RankDto updatedRankDto;
 
     @NonNull
-    List<Rank> updatedAffectedRanks;
+    List<RankDto> updatedAffectedRankDtos;
 
     @NonNull Reason reason;
 

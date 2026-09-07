@@ -1,17 +1,17 @@
 package com.matthewmcroberts.modules.rank.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.matthewmcroberts.modules.rank.models.DisplayNameUpdate;
-import com.matthewmcroberts.modules.rank.models.InheritanceUpdate;
-import com.matthewmcroberts.modules.rank.models.PermissionsUpdate;
-import com.matthewmcroberts.modules.rank.models.PlayerRankAssignment;
-import com.matthewmcroberts.modules.rank.models.PriorityUpdate;
-import com.matthewmcroberts.modules.rank.models.Rank;
-import com.matthewmcroberts.modules.rank.models.RankAssignment;
+import com.matthewmcroberts.modules.rank.client.dto.DisplayNameUpdateDto;
+import com.matthewmcroberts.modules.rank.client.dto.InheritanceUpdateDto;
+import com.matthewmcroberts.modules.rank.client.dto.PermissionsUpdateDto;
+import com.matthewmcroberts.modules.rank.client.dto.PlayerRankAssignmentDto;
+import com.matthewmcroberts.modules.rank.client.dto.PriorityUpdateDto;
+import com.matthewmcroberts.modules.rank.client.dto.RankDto;
+import com.matthewmcroberts.modules.rank.client.dto.RankAssignmentDto;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -25,7 +25,7 @@ import java.util.concurrent.CompletionException;
 import static org.bukkit.Bukkit.getLogger;
 
 @RequiredArgsConstructor
-public class RankApiClient {
+public class RankClient {
     // TODO: Handle key value more securely
     private static final String HEADER_KEY = "RANKS-API-KEY";
     private static final String HEADER_VALUE = "matthew.mcroberts.key";
@@ -35,10 +35,10 @@ public class RankApiClient {
     private final ObjectMapper objectMapper;
 
     // createRank
-    public CompletableFuture<Rank> createRank(@NonNull final Rank rank) {
+    public CompletableFuture<RankDto> createRank(@NonNull final RankDto rankDto) {
         final String json;
         try {
-            json = objectMapper.writeValueAsString(rank);
+            json = objectMapper.writeValueAsString(rankDto);
         } catch(JsonProcessingException e) {
             return CompletableFuture.failedFuture(e);
         }
@@ -57,7 +57,7 @@ public class RankApiClient {
                     }
 
                     try {
-                        return objectMapper.readValue(response.body(), Rank.class);
+                        return objectMapper.readValue(response.body(), RankDto.class);
                     } catch (JsonProcessingException e) {
                         throw new CompletionException(e);
                     }
@@ -65,7 +65,7 @@ public class RankApiClient {
     }
 
     // getRankById
-    public CompletableFuture<Rank> getRankById(@NonNull final String rankId) {
+    public CompletableFuture<RankDto> getRankById(@NonNull final String rankId) {
         final HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/secure/api/ranks/" + rankId))
                 .header(HEADER_KEY, HEADER_VALUE)
@@ -79,7 +79,7 @@ public class RankApiClient {
                     }
 
                     try {
-                        return objectMapper.readValue(response.body(), Rank.class);
+                        return objectMapper.readValue(response.body(), RankDto.class);
                     } catch (JsonProcessingException e) {
                         throw new CompletionException(e);
                     }
@@ -87,7 +87,7 @@ public class RankApiClient {
     }
 
     // getAllRanks
-    public CompletableFuture<List<Rank>> getAllRanks() {
+    public CompletableFuture<List<RankDto>> getAllRanks() {
         final HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/secure/api/ranks"))
                 .header(HEADER_KEY, HEADER_VALUE)
@@ -101,7 +101,7 @@ public class RankApiClient {
                     }
 
                     try {
-                        return objectMapper.readValue(response.body(), objectMapper.getTypeFactory().constructCollectionType(List.class, Rank.class));
+                        return objectMapper.readValue(response.body(), objectMapper.getTypeFactory().constructCollectionType(List.class, RankDto.class));
                     } catch (JsonProcessingException e) {
                         throw new CompletionException(e);
                     }
@@ -109,13 +109,13 @@ public class RankApiClient {
     }
 
     // updateRankDisplayName
-    public CompletableFuture<Rank> updateRankDisplayName(@NonNull final String rankId, @NonNull final String rankDisplayName) {
+    public CompletableFuture<RankDto> updateRankDisplayName(@NonNull final String rankId, @NonNull final String rankDisplayName) {
         try {
-            final DisplayNameUpdate displayNameUpdate = DisplayNameUpdate.builder()
+            final DisplayNameUpdateDto displayNameUpdateDto = DisplayNameUpdateDto.builder()
                     .displayName(rankDisplayName)
                     .build();
 
-            final String json = objectMapper.writeValueAsString(displayNameUpdate);
+            final String json = objectMapper.writeValueAsString(displayNameUpdateDto);
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("http://localhost:8080/secure/api/ranks/" + rankId + "/display-name"))
@@ -131,7 +131,7 @@ public class RankApiClient {
                         }
 
                         try {
-                            return objectMapper.readValue(response.body(), Rank.class);
+                            return objectMapper.readValue(response.body(), RankDto.class);
                         } catch (JsonProcessingException e) {
                             throw new CompletionException(e);
                         }
@@ -142,13 +142,13 @@ public class RankApiClient {
     }
 
     // updateRankPriority
-    public CompletableFuture<Rank> updateRankPriority(@NonNull final String rankId, final int priority) {
+    public CompletableFuture<RankDto> updateRankPriority(@NonNull final String rankId, final int priority) {
         try {
-            final PriorityUpdate priorityUpdate = PriorityUpdate.builder()
+            final PriorityUpdateDto priorityUpdateDto = PriorityUpdateDto.builder()
                     .priority(priority)
                     .build();
 
-            final String json = objectMapper.writeValueAsString(priorityUpdate);
+            final String json = objectMapper.writeValueAsString(priorityUpdateDto);
 
             final HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("http://localhost:8080/secure/api/ranks/" + rankId + "/priority"))
@@ -164,7 +164,7 @@ public class RankApiClient {
                         }
 
                         try {
-                            return objectMapper.readValue(response.body(), Rank.class);
+                            return objectMapper.readValue(response.body(), RankDto.class);
                         } catch (JsonProcessingException e) {
                             throw new CompletionException(e);
                         }
@@ -175,13 +175,13 @@ public class RankApiClient {
     }
 
     // addRankPermissions
-    public CompletableFuture<Rank> addRankPermissions(@NonNull final String rankId, @NonNull final Set<String> permissions) {
+    public CompletableFuture<RankDto> addRankPermissions(@NonNull final String rankId, @NonNull final Set<String> permissions) {
         try {
-            final PermissionsUpdate permissionsUpdate = PermissionsUpdate.builder()
+            final PermissionsUpdateDto permissionsUpdateDto = PermissionsUpdateDto.builder()
                     .permissions(permissions)
                     .build();
 
-            String json = objectMapper.writeValueAsString(permissionsUpdate);
+            String json = objectMapper.writeValueAsString(permissionsUpdateDto);
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("http://localhost:8080/secure/api/ranks/" + rankId + "/permissions"))
@@ -197,7 +197,7 @@ public class RankApiClient {
                         }
 
                         try {
-                            return objectMapper.readValue(response.body(), Rank.class);
+                            return objectMapper.readValue(response.body(), RankDto.class);
                         } catch (JsonProcessingException e) {
                             throw new CompletionException(e);
                         }
@@ -208,13 +208,13 @@ public class RankApiClient {
     }
 
     // removeRankPermissions
-    public CompletableFuture<Rank> removeRankPermissions(@NonNull final String rankId, @NonNull final Set<String> permissions) {
+    public CompletableFuture<RankDto> removeRankPermissions(@NonNull final String rankId, @NonNull final Set<String> permissions) {
         try {
-            final PermissionsUpdate permissionsUpdate = PermissionsUpdate.builder()
+            final PermissionsUpdateDto permissionsUpdateDto = PermissionsUpdateDto.builder()
                     .permissions(permissions)
                     .build();
 
-            String json = objectMapper.writeValueAsString(permissionsUpdate);
+            String json = objectMapper.writeValueAsString(permissionsUpdateDto);
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("http://localhost:8080/secure/api/ranks/" + rankId + "/permissions"))
@@ -230,7 +230,7 @@ public class RankApiClient {
                         }
 
                         try {
-                            return objectMapper.readValue(response.body(), Rank.class);
+                            return objectMapper.readValue(response.body(), RankDto.class);
                         } catch (JsonProcessingException e) {
                             throw new CompletionException(e);
                         }
@@ -241,13 +241,13 @@ public class RankApiClient {
     }
 
     // addRankInheritance
-    public CompletableFuture<Rank> addRankInheritance(@NonNull final String rankId, @NonNull final Set<String> inheritedRankIds) {
+    public CompletableFuture<RankDto> addRankInheritance(@NonNull final String rankId, @NonNull final Set<String> inheritedRankIds) {
         try {
-            final InheritanceUpdate inheritanceUpdate = InheritanceUpdate.builder()
+            final InheritanceUpdateDto inheritanceUpdateDto = InheritanceUpdateDto.builder()
                     .inheritedRankIds(inheritedRankIds)
                     .build();
 
-            final String json = objectMapper.writeValueAsString(inheritanceUpdate);
+            final String json = objectMapper.writeValueAsString(inheritanceUpdateDto);
 
             final HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("http://localhost:8080/secure/api/ranks/" + rankId + "/inherited-ranks"))
@@ -263,7 +263,7 @@ public class RankApiClient {
                         }
 
                         try {
-                            return objectMapper.readValue(response.body(), Rank.class);
+                            return objectMapper.readValue(response.body(), RankDto.class);
                         } catch (JsonProcessingException e) {
                             throw new CompletionException(e);
                         }
@@ -274,13 +274,13 @@ public class RankApiClient {
     }
 
     // removeRankInheritance
-    public CompletableFuture<Rank> removeRankInheritance(@NonNull final String rankId, @NonNull final Set<String> inheritedRankIds) {
+    public CompletableFuture<RankDto> removeRankInheritance(@NonNull final String rankId, @NonNull final Set<String> inheritedRankIds) {
         try {
-            final InheritanceUpdate inheritanceUpdate = InheritanceUpdate.builder()
+            final InheritanceUpdateDto inheritanceUpdateDto = InheritanceUpdateDto.builder()
                     .inheritedRankIds(inheritedRankIds)
                     .build();
 
-            final String json = objectMapper.writeValueAsString(inheritanceUpdate);
+            final String json = objectMapper.writeValueAsString(inheritanceUpdateDto);
 
             final HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("http://localhost:8080/secure/api/ranks/" + rankId + "/inherited-ranks"))
@@ -296,7 +296,7 @@ public class RankApiClient {
                         }
 
                         try {
-                            return objectMapper.readValue(response.body(), Rank.class);
+                            return objectMapper.readValue(response.body(), RankDto.class);
                         } catch (JsonProcessingException e) {
                             throw new CompletionException(e);
                         }
@@ -327,7 +327,7 @@ public class RankApiClient {
     }
 
     // getRankByName
-    public CompletableFuture<Rank> getRankByName(@NonNull final String rankName) {
+    public CompletableFuture<RankDto> getRankByName(@NonNull final String rankName) {
         final HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/secure/api/ranks/by-name/" + rankName))
                 .header(HEADER_KEY, HEADER_VALUE)
@@ -342,7 +342,7 @@ public class RankApiClient {
                     }
 
                     try {
-                        return objectMapper.readValue(response.body(), Rank.class);
+                        return objectMapper.readValue(response.body(), RankDto.class);
                     } catch (JsonProcessingException e) {
                         throw new CompletionException(e);
                     }
@@ -351,7 +351,7 @@ public class RankApiClient {
 
 
     // getPlayersWithRank
-    public CompletableFuture<List<PlayerRankAssignment>> getPlayersWithRank(@NonNull final String rankId) {
+    public CompletableFuture<List<PlayerRankAssignmentDto>> getPlayersWithRank(@NonNull final String rankId) {
         final HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/secure/api/ranks/" + rankId + "/players"))
                 .header(HEADER_KEY, HEADER_VALUE)
@@ -367,7 +367,7 @@ public class RankApiClient {
 
                     try {
                         return objectMapper.readValue(response.body(), objectMapper.getTypeFactory()
-                                .constructCollectionType(List.class, PlayerRankAssignment.class)
+                                .constructCollectionType(List.class, PlayerRankAssignmentDto.class)
                         );
                     } catch (JsonProcessingException e) {
                         throw new CompletionException(e);
@@ -377,17 +377,17 @@ public class RankApiClient {
 
 
     // assignPlayerRank
-    public CompletableFuture<PlayerRankAssignment> assignPlayerRank(
+    public CompletableFuture<PlayerRankAssignmentDto> assignPlayerRank(
             @NonNull final String playerId,
-            @NonNull final String assignedById,
+            @Nullable final String assignedById,
             @NonNull final String rankId) {
         try {
-            final RankAssignment rankAssignment = RankAssignment.builder()
+            final RankAssignmentDto rankAssignmentDto = RankAssignmentDto.builder()
                     .assignedById(assignedById)
                     .rankId(rankId)
                     .build();
 
-            final String json = objectMapper.writeValueAsString(rankAssignment);
+            final String json = objectMapper.writeValueAsString(rankAssignmentDto);
 
             final HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("http://localhost:8080/secure/api/players/" + playerId + "/rank"))
@@ -404,7 +404,7 @@ public class RankApiClient {
                         }
 
                         try {
-                            return objectMapper.readValue(response.body(), PlayerRankAssignment.class);
+                            return objectMapper.readValue(response.body(), PlayerRankAssignmentDto.class);
                         } catch (JsonProcessingException e) {
                             throw new CompletionException(e);
                         }
@@ -416,9 +416,9 @@ public class RankApiClient {
 
 
     // getPlayerRankAssignments
-    public CompletableFuture<List<PlayerRankAssignment>> getPlayerRankAssignments(@NonNull final String playerId) {
+    public CompletableFuture<PlayerRankAssignmentDto> getPlayerRankAssignment(@NonNull final String playerId) {
         final HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8080/secure/api/players/" + playerId + "/rank-assignments"))
+                .uri(URI.create("http://localhost:8080/secure/api/players/" + playerId + "/rank-assignment"))
                 .header(HEADER_KEY, HEADER_VALUE)
                 .GET()
                 .build();
@@ -431,7 +431,7 @@ public class RankApiClient {
                     }
 
                     try {
-                        return objectMapper.readValue(response.body(), objectMapper.getTypeFactory().constructCollectionType(List.class, PlayerRankAssignment.class));
+                        return objectMapper.readValue(response.body(), PlayerRankAssignmentDto.class);
                     } catch (JsonProcessingException e) {
                         throw new CompletionException(e);
                     }
@@ -460,33 +460,6 @@ public class RankApiClient {
                     }
 
                     getLogger().info("Successfully removed rank from player " + playerId);
-                });
-    }
-
-
-    // getPlayerRanks
-    public CompletableFuture<List<Rank>> getPlayerRanks(@NonNull final String playerId) {
-        final HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(
-                        "http://localhost:8080/secure/api/players/"
-                                + playerId
-                                + "/ranks"
-                ))
-                .header(HEADER_KEY, HEADER_VALUE)
-                .GET()
-                .build();
-
-        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenApply(response -> {
-                    if (response.statusCode() != 200) {
-                        throw new CompletionException(new RuntimeException("Failed to get player ranks. HTTP " + response.statusCode() + ": " + response.body()));
-                    }
-
-                    try {
-                        return objectMapper.readValue(response.body(), objectMapper.getTypeFactory().constructCollectionType(List.class, Rank.class));
-                    } catch (JsonProcessingException e) {
-                        throw new CompletionException(e);
-                    }
                 });
     }
 }

@@ -1,4 +1,4 @@
-package com.matthewmcroberts.modules.rank.models;
+package com.matthewmcroberts.modules.rank.client.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PlayerRankAssignment {
+public class PlayerRankAssignmentDto {
     private String playerId;
     private String rankId;
     private String assignedById;

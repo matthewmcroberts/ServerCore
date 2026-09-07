@@ -1,4 +1,4 @@
-package com.matthewmcroberts.modules.rank.models;
+package com.matthewmcroberts.modules.rank.client.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PriorityUpdate {
+public class PriorityUpdateDto {
     private int priority;
 }

@@ -1,7 +1,7 @@
-package com.matthewmcroberts.modules.rank.events;
+package com.matthewmcroberts.modules.rank.client.events;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.matthewmcroberts.modules.rank.models.Rank;
+import com.matthewmcroberts.modules.rank.client.dto.PlayerRankAssignmentDto;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -11,7 +11,7 @@ import lombok.extern.jackson.Jacksonized;
 @Builder
 @Jacksonized
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class RankCreateEvent {
+public class PlayerRankRemoveEvent {
     @NonNull
-    Rank rank;
+    PlayerRankAssignmentDto playerRankAssignmentDto;
 }
