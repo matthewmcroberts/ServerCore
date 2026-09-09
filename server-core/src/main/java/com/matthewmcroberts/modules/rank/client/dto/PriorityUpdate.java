@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PriorityUpdateDto {
+public class PriorityUpdate {
     private int priority;
 }

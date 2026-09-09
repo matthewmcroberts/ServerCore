@@ -15,6 +15,6 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class InheritanceUpdateDto {
+public class InheritanceUpdate {
     private Set<String> inheritedRankIds;
 }

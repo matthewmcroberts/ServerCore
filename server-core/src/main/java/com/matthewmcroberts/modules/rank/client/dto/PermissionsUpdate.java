@@ -15,6 +15,6 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PermissionsUpdateDto {
+public class PermissionsUpdate {
     private Set<String> permissions;
 }

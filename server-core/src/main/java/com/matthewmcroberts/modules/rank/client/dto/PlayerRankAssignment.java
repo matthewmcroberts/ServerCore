@@ -1,16 +1,15 @@
 package com.matthewmcroberts.modules.rank.client.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PlayerRankAssignmentDto {
+public class PlayerRankAssignment {
     private String playerId;
+
+    @Setter
     private String rankId;
     private String assignedById;
 }

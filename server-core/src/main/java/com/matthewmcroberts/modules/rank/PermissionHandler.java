@@ -110,11 +110,12 @@ public final class PermissionHandler {
 
     public void recalculatePermissionsForPlayers(
             @NonNull final Iterable<Player> players,
-            @NonNull final java.util.function.Function<Player, Rank> getRankFunction) {
+            @NonNull final java.util.function.Function<Player, Optional<Rank>> getRankFunction) {
 
         for (final Player player : players) {
-            final Rank rank = getRankFunction.apply(player);
-            this.recalculatePermissionsForPlayer(player, rank);
+            final Optional<Rank> rankOpt = getRankFunction.apply(player);
+
+            rankOpt.ifPresent(rank -> this.recalculatePermissionsForPlayer(player, rank));
         }
     }
 

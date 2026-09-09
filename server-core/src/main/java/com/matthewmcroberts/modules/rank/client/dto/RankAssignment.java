@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RankAssignmentDto {
+public class RankAssignment {
     private String rankId;
     private String assignedById;
 }

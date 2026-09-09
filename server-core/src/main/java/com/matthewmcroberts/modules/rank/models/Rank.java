@@ -2,7 +2,7 @@ package com.matthewmcroberts.modules.rank.models;
 
 import com.matthewmcroberts.modules.rank.RankModule;
 import com.matthewmcroberts.modules.rank.client.RankClient;
-import com.matthewmcroberts.modules.rank.client.dto.RankDto;
+
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Objects;
@@ -14,13 +14,14 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
 
 @Slf4j
 public final class Rank {
-    @Getter(AccessLevel.PROTECTED)
-    private final RankDto delegate;
+    @Getter
+    private final com.matthewmcroberts.modules.rank.client.dto.Rank delegate;
 
     @Getter(AccessLevel.PROTECTED)
     private final WeakReference<RankModule> rankModuleReference;
@@ -29,7 +30,7 @@ public final class Rank {
         return Objects.requireNonNull(this.rankModuleReference.get(), "RankModule is no longer available.");
     }
 
-    public Rank(@NonNull final RankDto delegate, @NonNull final RankModule rankModule) {
+    public Rank(@NonNull final com.matthewmcroberts.modules.rank.client.dto.Rank delegate, @NonNull final RankModule rankModule) {
         this.delegate = delegate;
         this.rankModuleReference = new WeakReference<>(rankModule);
     }
@@ -39,7 +40,7 @@ public final class Rank {
     }
 
     public @NonNull String getRankId() {
-        return this.getDelegate().getId();
+        return this.getDelegate().getRankId();
     }
 
     public @NonNull String getRawDisplayName() {
@@ -120,13 +121,17 @@ public final class Rank {
         return this.getRankClient().removePlayerRank(playerId.toString()).thenApply(ignored -> null);
     }
 
-//    public List<Player> getOnlinePlayersWithRank() {
-//        return this.getRankModule().getOnlinePlayersWithRank(this.getRankId());
-//    }
+    public List<Player> getOnlinePlayersWithRank() {
+        return this.getRankModule().getOnlinePlayersWithRank(this.getRankId());
+    }
 
     public Set<String> getAllInheritedPermissions() {
         return this.getEffectivePermissions().stream()
                 .filter(permission -> !this.getOwnPermissions().contains(permission))
                 .collect(Collectors.toSet());
+    }
+
+    public @NonNull Component getRenderedDisplayName() {
+        return MiniMessage.miniMessage().deserialize(this.getRawDisplayName());
     }
 }

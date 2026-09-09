@@ -1,7 +1,7 @@
 package com.matthewmcroberts.modules.rank.client.events;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.matthewmcroberts.modules.rank.client.dto.RankDto;
+import com.matthewmcroberts.modules.rank.client.dto.Rank;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -15,10 +15,10 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RankPermissionUpdateEvent {
     @NonNull
-    RankDto updatedRankDto;
+    Rank updatedRank;
 
     @NonNull
-    List<RankDto> updatedAffectedRankDtos;
+    List<Rank> updatedAffectedRanks;
 
     @NonNull Reason reason;
 

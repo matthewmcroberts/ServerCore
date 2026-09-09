@@ -1,4 +1,4 @@
-package com.matthewmcroberts.modules.rank;
+package com.matthewmcroberts.modules.rank.converter;
 
 import org.springframework.messaging.Message;
 import org.springframework.messaging.converter.StringMessageConverter;

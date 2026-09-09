@@ -2,19 +2,16 @@ package com.matthewmcroberts.modules.rank.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matthewmcroberts.modules.rank.RankModule;
-import com.matthewmcroberts.modules.rank.RawStringMessageConverter;
+import com.matthewmcroberts.modules.rank.converter.RawStringMessageConverter;
 import jakarta.websocket.WebSocketContainer;
 import lombok.Getter;
-import lombok.NonNull;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.glassfish.tyrus.client.ClientManager;
-import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 import java.lang.ref.WeakReference;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 public class RankWebSocketClient {
