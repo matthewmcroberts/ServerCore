@@ -20,9 +20,11 @@ public class ServerEngine extends JavaPlugin {
         moduleManager = ServerModuleManager.getInstance();
 
         final RankModule rankModule = new RankModuleImpl(this);
+        final ScoreboardModule scoreboardModule = new ScoreboardModule(this);
         final RankDisplayModule displayModule = new RankDisplayModule(this);
+
         moduleManager.registerModule(rankModule)
-                .registerModule(new ScoreboardModule(this))
+                .registerModule(scoreboardModule)
                 .registerModule(displayModule);
 
         moduleManager.setup();

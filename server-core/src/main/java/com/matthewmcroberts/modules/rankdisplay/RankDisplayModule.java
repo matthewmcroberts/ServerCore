@@ -5,15 +5,19 @@ import com.matthewmcroberts.modules.ServerModuleManager;
 import com.matthewmcroberts.modules.rank.RankModule;
 import com.matthewmcroberts.modules.rank.events.PlayerRankAssignEvent;
 import com.matthewmcroberts.modules.rank.events.PlayerRankUnassignEvent;
+import com.matthewmcroberts.modules.rank.events.RankCreateEvent;
 import com.matthewmcroberts.modules.rank.events.RankDeleteEvent;
 import com.matthewmcroberts.modules.rank.models.Rank;
 import com.matthewmcroberts.modules.rankdisplay.model.MutableDisplayRank;
 import com.matthewmcroberts.modules.rankdisplay.team.RankTeam;
 import com.matthewmcroberts.modules.scoreboard.ScoreboardModule;
+import io.papermc.paper.event.player.AsyncChatEvent;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.megavex.scoreboardlibrary.api.team.ScoreboardTeam;
 import net.megavex.scoreboardlibrary.api.team.TeamManager;
 import org.bukkit.Bukkit;
@@ -60,7 +64,7 @@ public class RankDisplayModule implements ServerModule, Listener {
         return Objects.requireNonNull(this.scoreboardModuleReference.get(), "ScoreboardModule is no longer available");
     }
 
-    public @NonNull RankModule getMineplexRankModule() {
+    public @NonNull RankModule getRankModule() {
         return Objects.requireNonNull(
                 this.mineplexRankModuleReference.get(), "RankModule is no longer available");
     }
@@ -77,21 +81,22 @@ public class RankDisplayModule implements ServerModule, Listener {
         this.defaultTeam = this.getTeamManager().createIfAbsent(DEFAULT_TEAM_ID);
         this.defaultTeam.defaultDisplay().friendlyFire(true);
 
-        final List<Rank> allRanks = new ArrayList<>();
-        allRanks.addAll(this.getMineplexRankModule().getAllRanks());
+        Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
+            final List<Rank> allRanks = new ArrayList<>(this.getRankModule().getAllRanks());
 
-        for (final Rank rank : allRanks) {
-            final String id = rank.getRankId();
-            final RankTeam rankTeam = new RankTeam(MutableDisplayRank.builder()
-                    .id(id)
-                    .displayName(rank.getRenderedDisplayName())
-                    .build());
-            this.rankTeams.put(id, rankTeam);
-            rankTeam.setup(this);
-        }
+            for (final Rank rank : allRanks) {
+                final String id = rank.getRankId();
+                final RankTeam rankTeam = new RankTeam(MutableDisplayRank.builder()
+                        .id(id)
+                        .displayName(rank.getRenderedDisplayName())
+                        .build());
+                this.rankTeams.put(id, rankTeam);
+                rankTeam.setup(this);
+            }
+        }, 20L);
 
         this.refreshTask = Bukkit.getScheduler()
-                .runTaskTimerAsynchronously(this.plugin, this::handleRefreshTask, 0L, 12000);
+                .runTaskTimer(this.plugin, this::handleRefreshTask, 0L, 12000);
     }
 
     @Override
@@ -116,7 +121,7 @@ public class RankDisplayModule implements ServerModule, Listener {
 
     private void handleRefreshTask() {
         final Set<Rank> allCurrentRanks = new HashSet<>();
-        allCurrentRanks.addAll(this.getMineplexRankModule().getAllRanks());
+        allCurrentRanks.addAll(this.getRankModule().getAllRanks());
 
         // Handle new or updated ranks
         for (final Rank rank : allCurrentRanks) {
@@ -161,7 +166,7 @@ public class RankDisplayModule implements ServerModule, Listener {
             rankTeam.removePlayer(player);
 
             final Optional<Rank> currentRankOpt =
-                    this.getMineplexRankModule().getRankForOnlinePlayer(player);
+                    this.getRankModule().getRankForOnlinePlayer(player);
             if (currentRankOpt.isPresent()) {
                 final RankTeam newRankTeam = this.rankTeams.get(this.resolveKey(currentRankOpt.get()));
                 if (newRankTeam != null) {
@@ -227,7 +232,9 @@ public class RankDisplayModule implements ServerModule, Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
     private void onPlayerJoin(@NonNull final PlayerJoinEvent event) {
         final Player player = event.getPlayer();
-        this.assignToTeam(player, null);
+        Optional<Rank> rankOpt = this.getRankModule().getRankForOnlinePlayer(player);
+
+        rankOpt.ifPresent(rank -> this.assignToTeam(player, rank));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -235,6 +242,18 @@ public class RankDisplayModule implements ServerModule, Listener {
         final Player player = event.getPlayer();
         this.removeFromTeam(player);
         this.teamManager.removePlayer(player);
+    }
+
+    @EventHandler
+    private void onRankCreate(@NonNull final RankCreateEvent event) {
+        final Rank rank = event.getRank();
+        final RankTeam rankTeam = new RankTeam(MutableDisplayRank.builder()
+                .id(rank.getRankId())
+                .displayName(rank.getRenderedDisplayName())
+                .build());
+
+        rankTeam.setup(this);
+        this.rankTeams.put(rank.getRankId(), rankTeam);
     }
 
     @EventHandler
@@ -261,5 +280,36 @@ public class RankDisplayModule implements ServerModule, Listener {
         final Player player = event.getPlayer();
         this.removeFromTeam(player);
         this.assignToTeam(player, null);
+    }
+
+    @EventHandler
+    private void onPlayerChat(@NonNull final AsyncChatEvent event) {
+        final Player player = event.getPlayer();
+
+        final Optional<Rank> rankOpt = this.getRankModule().getRankForOnlinePlayer(player);
+
+        if (rankOpt.isEmpty()) {
+            event.renderer((source, sourceDisplayName, message, viewer) ->
+                    Component.empty()
+                            .append(Component.text(" "))
+                            .append(sourceDisplayName.color(NamedTextColor.YELLOW))
+                            .append(Component.text(" ").color(NamedTextColor.YELLOW))
+                            .append(message.color(NamedTextColor.WHITE))
+            );
+            return;
+        }
+
+        final Rank rank = rankOpt.get();
+
+        final Component rankDisplay = rank.getRenderedDisplayName();
+
+        event.renderer((source, sourceDisplayName, message, viewer) ->
+                Component.empty()
+                        .append(rankDisplay)
+                        .append(Component.text(" "))
+                        .append(sourceDisplayName.color(NamedTextColor.YELLOW))
+                        .append(Component.text(" ").color(NamedTextColor.YELLOW))
+                        .append(message.color(NamedTextColor.WHITE))
+        );
     }
 }
