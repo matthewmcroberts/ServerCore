@@ -11,6 +11,7 @@ import com.matthewmcroberts.modules.rank.client.events.RankDeleteEvent;
 import com.matthewmcroberts.modules.rank.client.events.RankInheritanceUpdateEvent;
 import com.matthewmcroberts.modules.rank.client.events.RankPermissionUpdateEvent;
 import com.matthewmcroberts.modules.rank.client.events.RankUpdateEvent;
+import com.matthewmcroberts.modules.rank.events.PlayerRankUnassignEvent;
 import com.matthewmcroberts.modules.rank.models.Rank;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -175,6 +176,8 @@ public class WebSocketEventHandler extends StompSessionHandlerAdapter {
             // Recalculate permissions for new rank
             this.getRankModule().recalculatePermissions(Set.of(player));
 
+            Bukkit.getScheduler().runTask(this.plugin, () -> new com.matthewmcroberts.modules.rank.events.PlayerRankAssignEvent(player, rank).callEvent());
+
             RankMessages.Command.Assign.TARGET.send(player, Component.text(rank.getRankId()));
         } catch (final IllegalArgumentException e) {
             log.error(
@@ -204,6 +207,8 @@ public class WebSocketEventHandler extends StompSessionHandlerAdapter {
 
             this.getRankModule().recalculatePermissions(Set.of(player));
 
+            Bukkit.getScheduler().runTask(this.plugin, () -> new PlayerRankUnassignEvent(player, rank).callEvent());
+
             RankMessages.Command.Unassign.TARGET.send(player, Component.text(rank.getRankId()));
         } catch (final IllegalArgumentException e) {
             log.error(
@@ -215,6 +220,9 @@ public class WebSocketEventHandler extends StompSessionHandlerAdapter {
 
     private void onRankCreate(RankCreateEvent event) {
         this.getRankModule().updateRanksCache(event.getRank());
+
+        final Optional<Rank> rankOpt = this.getRankModule().getRankById(event.getRank().getRankId());
+        rankOpt.ifPresent(rank -> Bukkit.getScheduler().runTask(this.plugin, () -> new com.matthewmcroberts.modules.rank.events.RankCreateEvent(rank).callEvent()));
     }
 
     private void onRankDelete(RankDeleteEvent event) {
@@ -259,6 +267,8 @@ public class WebSocketEventHandler extends StompSessionHandlerAdapter {
         } else {
             log.info("No ranks were affected by the deletion of Rank[{}]", deletedCommonRank.getRankId());
         }
+
+        Bukkit.getScheduler().runTask(this.plugin, () -> new com.matthewmcroberts.modules.rank.events.RankDeleteEvent(event.getDeletedRank()).callEvent());
     }
 
     private void onRankInheritanceUpdate(RankInheritanceUpdateEvent event) {
